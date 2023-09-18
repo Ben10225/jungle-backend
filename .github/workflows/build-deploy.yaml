@@ -21,8 +21,8 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t your-image-name .
-          docker push your-image-name
+          docker build -t benpeng/jungle .
+          docker push benpeng/jungle
 
       # - name: SSH into EC2 instance and deploy
       #   uses: appleboy/ssh-action@master
