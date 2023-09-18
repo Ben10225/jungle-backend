@@ -1,9 +1,9 @@
-name: Build and Deploy
+name: CI Pipeline
 
 on:
   push:
     branches:
-      - main # 设置要触发工作流程的分支
+      - main
 
 jobs:
   build-and-deploy:
@@ -23,13 +23,3 @@ jobs:
         run: |
           docker build -t benpeng/jungle .
           docker push benpeng/jungle
-
-      - name: SSH into EC2 instance and deploy
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            docker pull benpeng/jungle:latest
-            docker run -d --name myapp -p 3000:3000 benpeng/jungle:latest

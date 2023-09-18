@@ -1,0 +1,21 @@
+name: CD Pipeline
+
+on:
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types:
+      - completed
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+    steps:
+      - name: Pull docker image
+        run: docker pull benpeng/jungle:latest
+
+      - name: Delete old docker container
+        run: docker rm -f myapp || true
+
+      - name: Run docker container
+        run: docker run -d --name myapp -p 3000:3000 benpeng/jungle:latest
