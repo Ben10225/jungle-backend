@@ -24,14 +24,14 @@ jobs:
           docker build -t benpeng/jungle .
           docker push benpeng/jungle
 
-      # - name: SSH into EC2 instance and deploy
-      #   uses: appleboy/ssh-action@master
-      #   with:
-      #     host: ${{ secrets.EC2_HOST }}
-      #     username: ${{ secrets.EC2_USERNAME }}
-      #     key: ${{ secrets.EC2_SSH_KEY }}
-      #     script: |
-      #       docker stop your-container-name || true
-      #       docker rm your-container-name || true
-      #       docker pull your-image-name
-      #       docker run -d --name your-container-name -p 80:80 your-image-name
+      - name: SSH into EC2 instance and deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            docker stop your-container-name || true
+            docker rm your-container-name || true
+            docker pull your-image-name
+            docker run -d --name your-container-name -p 80:80 your-image-name
