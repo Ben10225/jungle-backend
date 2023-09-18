@@ -31,7 +31,5 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            docker stop your-container-name || true
-            docker rm your-container-name || true
-            docker pull your-image-name
-            docker run -d --name your-container-name -p 80:80 your-image-name
+            docker pull benpeng/jungle:latest
+            docker run -d --name myapp -p 3000:3000 benpeng/jungle:latest
