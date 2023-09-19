@@ -32,8 +32,10 @@ jobs:
 
       - name: Delete Untagged ECR Images
         run: |
-          IMAGES_TO_DELETE=$( aws ecr list-images --region us-west-2 --repository-name jungle --filter "tagStatus=UNTAGGED" --query 'imageIds[*]' --output json )
-          aws ecr batch-delete-image --region us-west-2 --repository-name jungle --image-ids "$IMAGES_TO_DELETE" || true
+          aws ecr batch-delete-image --region us-west-2 \
+              --repository-name jungle \
+              --image-ids "$(aws ecr list-images --region us-west-2 --repository-name jungle --query 'imageIds[*]' --output json
+          )" || true
 
       # - name: ECR Cleanup
       #   run: aws ecr batch-delete-image --repository-name jungle --image-ids imageTag=latest imageTag=-
