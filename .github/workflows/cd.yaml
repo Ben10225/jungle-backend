@@ -30,8 +30,21 @@ jobs:
           docker tag jungle:latest 049366755955.dkr.ecr.us-west-2.amazonaws.com/jungle:latest
           docker push 049366755955.dkr.ecr.us-west-2.amazonaws.com/jungle:latest
 
-      - name: ECR Cleanup
-        run: aws ecr batch-delete-image --repository-name jungle --image-ids imageTag=latest imageTag=-
+      - name: List Untagged ECR Images
+        id: list-untagged-images
+        run: |
+          images=$(aws ecr list-images --repository-name jungle --query 'imageIds[?imageTag==`null`].[imageDigest]' --output json)
+          echo "::set-output name=images::$images"
+
+      - name: Delete Untagged ECR Images
+        run: |
+          for digest in $(echo "${{ steps.list-untagged-images.outputs.images }}"); do
+            aws ecr batch-delete-image --repository-name jungle --image-ids imageDigest=$digest
+          done
+
+      # - name: ECR Cleanup
+      #   run: aws ecr batch-delete-image --repository-name jungle --image-ids imageTag=latest imageTag=-
+
 # jobs:
 #   build:
 #     runs-on: self-hosted
