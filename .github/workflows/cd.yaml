@@ -44,9 +44,9 @@ jobs:
       - name: Deploy EC2
         uses: easingthemes/ssh-deploy@v2.1.5
         env:
-          PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          HOSTNAME: ${{secrets.EC2_HOST}}
-          USER_NAME: ${{secrets.EC2_USERNAME}}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          REMOTE_HOST: ${{secrets.EC2_HOST}}
+          REMOTE_USER: ${{secrets.EC2_USERNAME}}
 
       - name: Delete old docker container
         run: docker rm -f myapp || true
