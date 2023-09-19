@@ -50,7 +50,7 @@ jobs:
 
       - name: SSH into EC2 and run commands
         run: |
-          ssh -i -v ~/.ssh/id_rsa ubuntu@50.112.65.167 "ls -al"
+          ssh -i ~/.ssh/id_rsa ubuntu@50.112.65.167 "ls -al"
 
       # - name: Delete old docker container
       #   run: docker rm -f myapp || true
