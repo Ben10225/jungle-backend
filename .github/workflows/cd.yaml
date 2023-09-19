@@ -41,16 +41,14 @@ jobs:
       # - name: Pull Docker Image from ECR
       #   run: docker pull 049366755955.dkr.ecr.us-west-2.amazonaws.com/jungle:latest
 
-      - name: Configure SSH
+      - name: Deploy on AWS EC2
+        env:
+          PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+          HOST_NAME: ${{ secrets.EC2_HOST }}
+          USER_NAME: ${{ secrets.EC2_USERNAME }}
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H 50.112.65.167 >> ~/.ssh/known_hosts
-
-      - name: SSH into EC2 and run commands
-        run: |
-          ssh -i ~/.ssh/id_rsa ubuntu@50.112.65.167 "ls -al"
+          echo "PRIVATE_KEY" > private_key.pem && chmod 600 private_key.pem
+          ls
 
       # - name: Delete old docker container
       #   run: docker rm -f myapp || true
