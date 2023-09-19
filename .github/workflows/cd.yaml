@@ -46,11 +46,11 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H 172.31.27.171 >> ~/.ssh/known_hosts
+          ssh-keyscan -H 50.112.65.167 >> ~/.ssh/known_hosts
 
       - name: SSH into EC2 and run commands
         run: |
-          ssh -i -v ~/.ssh/id_rsa 172.31.27.171 "ls -al"
+          ssh -i -v ~/.ssh/id_rsa 50.112.65.167 "ls -al"
 
       # - name: Delete old docker container
       #   run: docker rm -f myapp || true
