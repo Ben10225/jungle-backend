@@ -25,7 +25,9 @@ jobs:
         run: aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 049366755955.dkr.ecr.us-west-2.amazonaws.com
 
       - name: Push Docker Image to ECR
-        run: docker push 049366755955.dkr.ecr.us-west-2.amazonaws.com/jungle:latest
+        run: |
+          docker tag jungle:latest 049366755955.dkr.ecr.us-west-2.amazonaws.com/jungle:latest
+          docker push 049366755955.dkr.ecr.us-west-2.amazonaws.com/jungle:latest
 
     # - name: Deploy to EC2
     #   run: |
@@ -35,6 +37,7 @@ jobs:
     # - name: Cleanup
     #   run: |
     #     # 可以添加清理步骤，如停止和删除旧容器等
+
 # jobs:
 #   build:
 #     runs-on: self-hosted
