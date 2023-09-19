@@ -24,8 +24,8 @@ jobs:
       - name: Login to Amazon ECR
         run: aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 049366755955.dkr.ecr.us-west-2.amazonaws.com
 
-      - name: Pull Docker Image from ECR
-        run: docker pull 049366755955.dkr.ecr.us-west-2.amazonaws.com/jungle:latest
+      - name: Push Docker Image to ECR
+        run: docker push 049366755955.dkr.ecr.us-west-2.amazonaws.com/jungle:latest
 
     # - name: Deploy to EC2
     #   run: |
