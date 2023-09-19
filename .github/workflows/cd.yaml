@@ -7,66 +7,47 @@ on:
       - completed
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
+  build:
+    runs-on: self-hosted
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v2
+      - name: Pull docker image
+        run: docker pull benpeng/jungle:latest
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-west-2
+      - name: Delete old docker container
+        run: docker rm -f myapp || true
 
-      - name: Login to Amazon ECR
-        run: aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 049366755955.dkr.ecr.us-west-2.amazonaws.com
-
-      - name: Push Docker Image to ECR
-        run: |
-          docker build -t jungle .
-          docker tag jungle:latest 049366755955.dkr.ecr.us-west-2.amazonaws.com/jungle:latest
-          docker push 049366755955.dkr.ecr.us-west-2.amazonaws.com/jungle:latest
-
-      - name: Delete Untagged ECR Images
-        run: |
-          IMAGES_TO_DELETE=$( aws ecr list-images --region us-west-2 --repository-name jungle --filter "tagStatus=UNTAGGED" --query 'imageIds[*]' --output json )
-          aws ecr batch-delete-image --region us-west-2 --repository-name jungle --image-ids "$IMAGES_TO_DELETE" || true
-
-      # - name: ECR Cleanup
-      #   run: aws ecr batch-delete-image --repository-name jungle --image-ids imageTag=latest imageTag=-
-
-      # - name: Pull Docker Image from ECR
-      #   run: docker pull 049366755955.dkr.ecr.us-west-2.amazonaws.com/jungle:latest
-
-      - name: Deploy on AWS EC2
-        env:
-          PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
-          HOST_NAME: ${{ secrets.EC2_HOST }}
-          USER_NAME: ${{ secrets.EC2_USERNAME }}
-        run: |
-          echo "$PRIVATE_KEY" > private_key.pem && chmod 600 private_key.pem
-          ssh -o StrictHostKeyChecking=no -i private_key.pem ${USER_NAME}@${HOST_NAME}
-            cd /tmp
-
-      # - name: Delete old docker container
-      #   run: docker rm -f myapp || true
-
-      # - name: Run docker container
-      #   run: docker run -d --name myapp -p 3000:3000 049366755955.dkr.ecr.us-west-2.amazonaws.com/jungle:latest
-
+      - name: Run docker container
+        run: docker run -d --name myapp -p 3000:3000 benpeng/jungle:latest
 # jobs:
-#   build:
-#     runs-on: self-hosted
+#   deploy:
+#     runs-on: ubuntu-latest
 
 #     steps:
-#       - name: Pull docker image
-#         run: docker pull benpeng/jungle:latest
+#       - name: Checkout Code
+#         uses: actions/checkout@v2
 
-#       - name: Delete old docker container
-#         run: docker rm -f myapp || true
+#       - name: Configure AWS Credentials
+#         uses: aws-actions/configure-aws-credentials@v2
+#         with:
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           aws-region: us-west-2
 
-#       - name: Run docker container
-#         run: docker run -d --name myapp -p 3000:3000 benpeng/jungle:latest
+#       - name: Login to Amazon ECR
+#         run: aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 049366755955.dkr.ecr.us-west-2.amazonaws.com
+
+#       - name: Push Docker Image to ECR
+#         run: |
+#           docker build -t jungle .
+#           docker tag jungle:latest 049366755955.dkr.ecr.us-west-2.amazonaws.com/jungle:latest
+#           docker push 049366755955.dkr.ecr.us-west-2.amazonaws.com/jungle:latest
+
+#       - name: Delete Untagged ECR Images
+#         run: |
+#           IMAGES_TO_DELETE=$( aws ecr list-images --region us-west-2 --repository-name jungle --filter "tagStatus=UNTAGGED" --query 'imageIds[*]' --output json )
+#           aws ecr batch-delete-image --region us-west-2 --repository-name jungle --image-ids "$IMAGES_TO_DELETE" || true
+
+# - name: ECR Cleanup
+#   run: aws ecr batch-delete-image --repository-name jungle --image-ids imageTag=latest imageTag=-
+
