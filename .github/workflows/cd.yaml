@@ -19,6 +19,12 @@ jobs:
 
       - name: Run docker container
         run: docker run -d --name myapp -p 3000:3000 benpeng/jungle:latest
+
+      - name: Check Docker Images
+        run: |
+          # 列出所有 "dangling" 或 "none" 镜像
+          docker images -q --filter "dangling=true" | xargs -r docker rmi
+        if: success() # 僅在上述步驟成功時執行
 # jobs:
 #   deploy:
 #     runs-on: ubuntu-latest
