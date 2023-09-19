@@ -26,7 +26,7 @@ jobs:
 
       - name: Push Docker Image to ECR
         run: |
-          docker tag jungle:latest 049366755955.dkr.ecr.us-west-2.amazonaws.com/jungle:latest
+          docker tag benpeng/jungle 049366755955.dkr.ecr.us-west-2.amazonaws.com/jungle:latest
           docker push 049366755955.dkr.ecr.us-west-2.amazonaws.com/jungle:latest
 
     # - name: Deploy to EC2
