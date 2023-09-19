@@ -30,8 +30,8 @@ jobs:
           docker tag jungle:latest 049366755955.dkr.ecr.us-west-2.amazonaws.com/jungle:latest
           docker push 049366755955.dkr.ecr.us-west-2.amazonaws.com/jungle:latest
 
-      - name: Cleanup
-        run: docker rmi jungle:latest || true
+      - name: ECR Cleanup
+        run: aws ecr batch-delete-image --repository-name jungle --image-ids jungle:latest
 # jobs:
 #   build:
 #     runs-on: self-hosted
