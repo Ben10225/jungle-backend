@@ -30,15 +30,8 @@ jobs:
           docker tag jungle:latest 049366755955.dkr.ecr.us-west-2.amazonaws.com/jungle:latest
           docker push 049366755955.dkr.ecr.us-west-2.amazonaws.com/jungle:latest
 
-    # - name: Deploy to EC2
-    #   run: |
-    #     # 在这里执行部署到 EC2 实例的命令
-    #     # 可能包括将 Docker 镜像启动为容器等
-
-    # - name: Cleanup
-    #   run: |
-    #     # 可以添加清理步骤，如停止和删除旧容器等
-
+      - name: Cleanup
+        run: docker rmi jungle:latest || true
 # jobs:
 #   build:
 #     runs-on: self-hosted
