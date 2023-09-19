@@ -41,15 +41,12 @@ jobs:
       - name: Pull Docker Image from ECR
         run: docker pull 049366755955.dkr.ecr.us-west-2.amazonaws.com/jungle:latest
 
-      - name: Build & Deploy
+      - name: Deploy EC2
+        uses: easingthemes/ssh-deploy@v2.1.5
         env:
           PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           HOSTNAME: ${{secrets.EC2_HOST}}
           USER_NAME: ${{secrets.EC2_USERNAME}}
-
-        run: |
-          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
-          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
 
       - name: Delete old docker container
         run: docker rm -f myapp || true
