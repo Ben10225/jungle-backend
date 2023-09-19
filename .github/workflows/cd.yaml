@@ -7,15 +7,44 @@ on:
       - completed
 
 jobs:
-  build:
-    runs-on: self-hosted
+  deploy:
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Pull docker image
-        run: docker pull benpeng/jungle:latest
+      - name: Checkout Code
+        uses: actions/checkout@v2
 
-      - name: Delete old docker container
-        run: docker rm -f myapp || true
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
 
-      - name: Run docker container
-        run: docker run -d --name myapp -p 3000:3000 benpeng/jungle:latest
+      - name: Login to Amazon ECR
+        run: aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 049366755955.dkr.ecr.us-west-2.amazonaws.com
+
+      - name: Pull Docker Image from ECR
+        run: docker pull 049366755955.dkr.ecr.us-west-2.amazonaws.com/jungle:latest
+
+    # - name: Deploy to EC2
+    #   run: |
+    #     # 在这里执行部署到 EC2 实例的命令
+    #     # 可能包括将 Docker 镜像启动为容器等
+
+    # - name: Cleanup
+    #   run: |
+    #     # 可以添加清理步骤，如停止和删除旧容器等
+# jobs:
+#   build:
+#     runs-on: self-hosted
+
+#     steps:
+#       - name: Pull docker image
+#         run: docker pull benpeng/jungle:latest
+
+#       - name: Delete old docker container
+#         run: docker rm -f myapp || true
+
+#       - name: Run docker container
+#         run: docker run -d --name myapp -p 3000:3000 benpeng/jungle:latest
