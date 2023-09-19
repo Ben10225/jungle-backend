@@ -31,7 +31,7 @@ jobs:
           docker push 049366755955.dkr.ecr.us-west-2.amazonaws.com/jungle:latest
 
       - name: ECR Cleanup
-        run: aws ecr batch-delete-image --repository-name jungle --image-ids jungle:latest
+        run: aws ecr batch-delete-image --repository-name jungle --image-ids imageTag=jungle:latest imageTag=-
 # jobs:
 #   build:
 #     runs-on: self-hosted
