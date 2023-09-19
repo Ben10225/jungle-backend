@@ -41,20 +41,14 @@ jobs:
       - name: Pull Docker Image from ECR
         run: docker pull 049366755955.dkr.ecr.us-west-2.amazonaws.com/jungle:latest
 
-      - name: deploy EC2
-        uses: JimCronqvist/action-ssh@master
-        env:
-          PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          HOSTNAME: ${{ secrets.EC2_HOST }}
-          USER_NAME: ${{ secrets.EC2_USERNAME }}
+      - name: Executing remote ssh commands using ssh key
+        uses: appleboy/ssh-action@master
         with:
-          hosts: "${USER_NAME}@${HOSTNAME}"
-          privateKey: ${{ secrets.SSH_PRIVATE_KEY }}
-          debug: false
-          command: |
-            ls -lah
-            hostname -a
-            whoami
+          host: ${{ secrets.HOST_DNS }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            docker rm -f myapp || true
 
       # - name: Delete old docker container
       #   run: docker rm -f myapp || true
