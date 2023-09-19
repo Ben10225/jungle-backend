@@ -42,12 +42,11 @@ jobs:
         run: docker pull 049366755955.dkr.ecr.us-west-2.amazonaws.com/jungle:latest
 
       - name: Executing remote ssh commands using ssh key
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v0.1.4
         with:
           host: ${{ secrets.HOST_DNS }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
           script: |
             docker rm -f myapp || true
 
