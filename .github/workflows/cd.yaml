@@ -41,16 +41,22 @@ jobs:
       - name: Pull Docker Image from ECR
         run: docker pull 049366755955.dkr.ecr.us-west-2.amazonaws.com/jungle:latest
 
-      - name: SSH into EC2 and deploy
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            docker stop myapp || true
-            docker rm myapp || true
-            docker run -d --name myapp -p 3000:3000 049366755955.dkr.ecr.us-west-2.amazonaws.com/jungle:latest
+      - name: deploy EC2
+        steps:
+          - uses: actions/checkout@v2
+          - name: Login ec2
+            env:
+              PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+              HOSTNAME: ${{ secrets.EC2_HOST }}
+              USER_NAME: ${{ secrets.EC2_USERNAME }}
+            with:
+              hosts: "${USER_NAME}@${HOSTNAME}"
+              privateKey: ${{ secrets.SSH_PRIVATE_KEY }}
+              debug: false
+              command: |
+                ls -lah
+                hostname -a
+                whoami
 
       # - name: Delete old docker container
       #   run: docker rm -f myapp || true
