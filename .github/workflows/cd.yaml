@@ -47,8 +47,9 @@ jobs:
           HOST_NAME: ${{ secrets.EC2_HOST }}
           USER_NAME: ${{ secrets.EC2_USERNAME }}
         run: |
-          echo "PRIVATE_KEY" > private_key.pem && chmod 600 private_key.pem
-          ls
+          ssh -o StrictHostKeyChecking=no -i private_key.pem ${USER_NAME}@${HOST_NAME} '
+
+            cd /tmp
 
       # - name: Delete old docker container
       #   run: docker rm -f myapp || true
