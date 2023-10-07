@@ -13,7 +13,7 @@ COPY --from=builder /app/main .
 COPY --from=builder /app/migrate ./migrate
 COPY app.env .
 COPY start.sh .
-# COPY waitfor.sh .
+COPY waitfor.sh .
 COPY db/migrations ./migrations
 
 EXPOSE 3000
