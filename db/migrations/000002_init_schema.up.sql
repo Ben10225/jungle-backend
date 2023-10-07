@@ -1,0 +1,8 @@
+CREATE TABLE clothes(
+	  id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    amount INT NOT NULL,
+    cost INT NOT NULL,
+    price INT NOT NULL,
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

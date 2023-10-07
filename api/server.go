@@ -3,9 +3,10 @@ package api
 import (
 	"embed"
 	"fmt"
-	"jungle-proj/db"
 	"mime"
 	"strings"
+
+	sqlc "jungle-proj/db/sqlc"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,11 +15,11 @@ import (
 var staticFS embed.FS
 
 type Server struct {
-	store  db.Store
+	store  *sqlc.Store
 	router *gin.Engine
 }
 
-func NewServer(store db.Store) (*Server, error) {
+func NewServer(store *sqlc.Store) (*Server, error) {
 	server := &Server{
 		store: store,
 	}
@@ -32,8 +33,8 @@ func (server *Server) setupRouter() {
 
 	router.Use(corsMiddleware())
 
-	router.GET("/user/:id", server.loginUser)
-	router.POST("/user", server.createUser)
+	// router.GET("/user/:id", server.loginUser)
+	router.POST("/user", server.signUp)
 	router.POST("/input", server.getInput)
 
 	router.NoRoute(EmbedReact)
@@ -42,7 +43,7 @@ func (server *Server) setupRouter() {
 }
 
 func (server *Server) Start(address string) error {
-	return server.router.Run(address)
+	return server.router.Run(fmt.Sprintf(":%v", address))
 }
 
 func errorResponse(err error) gin.H {

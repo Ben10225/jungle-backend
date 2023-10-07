@@ -1,0 +1,28 @@
+version: "3.8"
+services:
+  mysql:
+    image: mysql:latest
+    container_name: mysql8
+    environment:
+      MYSQL_DATABASE: jungle
+      MYSQL_USER: user
+      MYSQL_PASSWORD: root456789
+      MYSQL_ROOT_PASSWORD: root456789
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_SOURCE=mysql://root:password@tcp(localhost:3306)/jungle?multiStatements=true
+    # depends_on:
+    #   - postgres
+    # entrypoint: ["/app/waitfor.sh", "postgres:5432", "--", "/app/start.sh"]
+    # command: ["/app/main"]
+volumes:
+  mysql-data:

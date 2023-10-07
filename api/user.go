@@ -1,21 +1,32 @@
 package api
 
 import (
-	"jungle-proj/model"
+	"database/sql"
+	sqlc "jungle-proj/db/sqlc"
+	"jungle-proj/util"
 	"net/http"
-	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
-func (s *Server) createUser(ctx *gin.Context) {
-	var user model.User
+func (s *Server) signUp(ctx *gin.Context) {
+	var user sqlc.User
 	if err := ctx.ShouldBindJSON(&user); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
-	if err := s.store.AddUser(&user); err != nil {
+	arg := sqlc.CreateUserParams{
+		Uuid:       util.UuidGenerate(),
+		Name:       user.Name,
+		Email:      user.Email,
+		Password:   user.Password,
+		CreateTime: sql.NullTime{Time: time.Now().Add(time.Hour * 8), Valid: true},
+	}
+
+	_, err := s.store.CreateUser(ctx, arg)
+	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -30,24 +41,24 @@ func (s *Server) createUser(ctx *gin.Context) {
 	})
 }
 
-func (s *Server) loginUser(ctx *gin.Context) {
-	id, _ := strconv.Atoi(ctx.Param("id"))
+// func (s *Server) loginUser(ctx *gin.Context) {
+// 	id, _ := strconv.Atoi(ctx.Param("id"))
 
-	user, err := s.store.GetUserByID(id)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"msg": "no user",
-		})
-		return
-	}
+// 	user, err := s.store.GetUserByID(id)
+// 	if err != nil {
+// 		ctx.JSON(http.StatusBadRequest, gin.H{
+// 			"msg": "no user",
+// 		})
+// 		return
+// 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"user": user,
-	})
-}
+// 	ctx.JSON(http.StatusOK, gin.H{
+// 		"user": user,
+// 	})
+// }
 
 func (s *Server) getInput(ctx *gin.Context) {
-	var user model.User
+	var user sqlc.User
 	if err := ctx.ShouldBindJSON(&user); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return

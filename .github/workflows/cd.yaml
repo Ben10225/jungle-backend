@@ -20,40 +20,8 @@ jobs:
       - name: Run docker container
         run: docker run -d --name myapp -p 3000:3000 benpeng/jungle:latest
 
-      - name: Check Docker Images
+      - name: Check Docker Images and remove
         run: |
-          # 列出所有 "dangling" 或 "none" 镜像
+          # 列出所有 "dangling" 或 "none" image
           docker images -q --filter "dangling=true" | xargs -r docker rmi
         if: success() # 僅在上述步驟成功時執行
-# jobs:
-#   deploy:
-#     runs-on: ubuntu-latest
-
-#     steps:
-#       - name: Checkout Code
-#         uses: actions/checkout@v2
-
-#       - name: Configure AWS Credentials
-#         uses: aws-actions/configure-aws-credentials@v2
-#         with:
-#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#           aws-region: us-west-2
-
-#       - name: Login to Amazon ECR
-#         run: aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 049366755955.dkr.ecr.us-west-2.amazonaws.com
-
-#       - name: Push Docker Image to ECR
-#         run: |
-#           docker build -t jungle .
-#           docker tag jungle:latest 049366755955.dkr.ecr.us-west-2.amazonaws.com/jungle:latest
-#           docker push 049366755955.dkr.ecr.us-west-2.amazonaws.com/jungle:latest
-
-#       - name: Delete Untagged ECR Images
-#         run: |
-#           IMAGES_TO_DELETE=$( aws ecr list-images --region us-west-2 --repository-name jungle --filter "tagStatus=UNTAGGED" --query 'imageIds[*]' --output json )
-#           aws ecr batch-delete-image --region us-west-2 --repository-name jungle --image-ids "$IMAGES_TO_DELETE" || true
-
-# - name: ECR Cleanup
-#   run: aws ecr batch-delete-image --repository-name jungle --image-ids imageTag=latest imageTag=-
-

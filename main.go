@@ -1,23 +1,35 @@
 package main
 
 import (
+	"database/sql"
 	"jungle-proj/api"
-	"jungle-proj/db"
+	sqlc "jungle-proj/db/sqlc"
+	"jungle-proj/util"
+
 	"log"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
-const addr = ":3000"
-
 func main() {
+	config, err := util.LoadConfig(".")
+	if err != nil {
+		log.Fatal("cannot load config", err)
+	}
 
-	store := db.NewMemoryStorage()
+	conn, err := sql.Open(config.DBDriver, config.DBSource)
+	if err != nil {
+		log.Fatal("cannot connect to db:", err)
+	}
+
+	store := sqlc.NewStore(conn)
 
 	server, err := api.NewServer(store)
 	if err != nil {
 		log.Fatal("connot create server", err)
 	}
 
-	err = server.Start(addr)
+	err = server.Start(config.Port)
 	if err != nil {
 		log.Fatal(err)
 	}
