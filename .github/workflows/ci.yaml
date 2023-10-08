@@ -20,7 +20,8 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Write app.env
-        env: PORT=${{ secrets.ENV_PORT }}
+        env: |
+          PORT=${{ secrets.ENV_PORT }}
           DB_DRIVER=${{ secrets.ENV_DB_DRIVER }}
           DB_SOURCE=${{ secrets.ENV_DB_SOURCE }}
         run: |
