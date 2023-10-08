@@ -29,8 +29,9 @@ jobs:
           echo $PORT >> app.env
           echo $DB_DRIVER >> app.env
           echo $DB_SOURCE >> app.env
+          cat app.env
 
       - name: Build Docker image
         run: |
-          docker build -t benpeng/jungle .
+          docker build -t benpeng/jungle --build-arg ENV_FILE=app.env .
           docker push benpeng/jungle
