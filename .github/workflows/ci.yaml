@@ -29,7 +29,6 @@ jobs:
           echo $PORT >> app.env
           echo DB_DRIVER=mysql >> app.env
           echo $DB_SOURCE >> app.env
-          cat app.env
 
       - name: Build Docker image
         run: |
