@@ -36,13 +36,54 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (sql.Res
 	)
 }
 
-const getUser = `-- name: GetUser :one
+const getUserByEmail = `-- name: GetUserByEmail :one
+SELECT uuid, name, email, password, create_time FROM users
+WHERE email = ? LIMIT 1
+`
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUserByEmail, email)
+	var i User
+	err := row.Scan(
+		&i.Uuid,
+		&i.Name,
+		&i.Email,
+		&i.Password,
+		&i.CreateTime,
+	)
+	return i, err
+}
+
+const getUserByEmailAndPwd = `-- name: GetUserByEmailAndPwd :one
+SELECT uuid, name, email, password, create_time FROM users 
+WHERE email = ? AND password = ? LIMIT 1
+`
+
+type GetUserByEmailAndPwdParams struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func (q *Queries) GetUserByEmailAndPwd(ctx context.Context, arg GetUserByEmailAndPwdParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUserByEmailAndPwd, arg.Email, arg.Password)
+	var i User
+	err := row.Scan(
+		&i.Uuid,
+		&i.Name,
+		&i.Email,
+		&i.Password,
+		&i.CreateTime,
+	)
+	return i, err
+}
+
+const getUserByUuid = `-- name: GetUserByUuid :one
 SELECT uuid, name, email, password, create_time FROM users
 WHERE uuid = ? LIMIT 1
 `
 
-func (q *Queries) GetUser(ctx context.Context, uuid string) (User, error) {
-	row := q.db.QueryRowContext(ctx, getUser, uuid)
+func (q *Queries) GetUserByUuid(ctx context.Context, uuid string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUserByUuid, uuid)
 	var i User
 	err := row.Scan(
 		&i.Uuid,

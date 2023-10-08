@@ -33,7 +33,7 @@ func (server *Server) setupRouter() {
 
 	router.Use(corsMiddleware())
 
-	// router.GET("/user/:id", server.loginUser)
+	router.POST("/login", server.loginUser)
 	router.POST("/user", server.signUp)
 	router.POST("/input", server.getInput)
 

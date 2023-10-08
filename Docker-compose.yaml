@@ -13,14 +13,11 @@ services:
     volumes:
       - dbdata:/var/lib/mysql
   api:
-    # image: benpeng/jungle:latest
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
-    # environment:
-    #   - DB_SOURCE=mysql://user:password@tcp(mysql:3306)/jungle?multiStatements=true
     depends_on:
       - mysql
     entrypoint: ["/app/waitfor.sh", "mysql:3306", "--", "/app/start.sh"]

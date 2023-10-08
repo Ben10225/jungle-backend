@@ -17,6 +17,20 @@ func (s *Server) signUp(ctx *gin.Context) {
 		return
 	}
 
+	_, err := s.store.GetUserByEmail(ctx, user.Email)
+	if err != nil {
+		if err.Error() != "sql: no rows in result set" {
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
+	} else {
+		ctx.JSON(http.StatusOK, gin.H{
+			"OK":      false,
+			"message": "email existed",
+		})
+		return
+	}
+
 	arg := sqlc.CreateUserParams{
 		Uuid:       util.UuidGenerate(),
 		Name:       user.Name,
@@ -25,37 +39,43 @@ func (s *Server) signUp(ctx *gin.Context) {
 		CreateTime: sql.NullTime{Time: time.Now().Add(time.Hour * 8), Valid: true},
 	}
 
-	_, err := s.store.CreateUser(ctx, arg)
+	_, err = s.store.CreateUser(ctx, arg)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
-
-	// users, _ := s.store.GetAllUser()
-	// for _, v := range users {
-	// 	fmt.Println(v.Name)
-	// }
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"OK": true,
 	})
 }
 
-// func (s *Server) loginUser(ctx *gin.Context) {
-// 	id, _ := strconv.Atoi(ctx.Param("id"))
+func (s *Server) loginUser(ctx *gin.Context) {
+	// id, _ := strconv.Atoi(ctx.Param("id"))
 
-// 	user, err := s.store.GetUserByID(id)
-// 	if err != nil {
-// 		ctx.JSON(http.StatusBadRequest, gin.H{
-// 			"msg": "no user",
-// 		})
-// 		return
-// 	}
+	var user sqlc.User
+	if err := ctx.ShouldBindJSON(&user); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
 
-// 	ctx.JSON(http.StatusOK, gin.H{
-// 		"user": user,
-// 	})
-// }
+	arg := sqlc.GetUserByEmailAndPwdParams{
+		Email:    user.Email,
+		Password: user.Password,
+	}
+
+	res, err := s.store.GetUserByEmailAndPwd(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	// todo add token
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"user": &res,
+	})
+}
 
 func (s *Server) getInput(ctx *gin.Context) {
 	var user sqlc.User
