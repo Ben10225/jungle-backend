@@ -27,6 +27,8 @@ jobs:
         run: |
           touch app.env
           echo $PORT >> app.env
+          echo $DB_DRIVER >> app.env
+          echo $DB_SOURCE >> app.env
           cat app.env
 
       - name: Build Docker image
