@@ -20,6 +20,23 @@ jobs:
       # - name: Run docker container
       #   run: docker run -d --name myapp -p 3000:3000 benpeng/jungle:latest
 
+      - name: Check if Docker Compose is running
+        id: check-compose
+        run: |
+          if docker-compose ps -q; then
+            echo "::set-output name=compose-running::true"
+          else
+            echo "::set-output name=compose-running::false"
+          fi
+
+      - name: Stop Docker Compose
+        if: steps.check-compose.outputs.compose-running == 'true'
+        run: |
+          docker-compose down
+
+      - name: Run Docker Compose
+        run: docker compose up -d
+
       - name: Check Docker Images and remove
         run: |
           # 列出所有 "dangling" 或 "none" image

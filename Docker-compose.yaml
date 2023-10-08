@@ -13,6 +13,7 @@ services:
     volumes:
       - dbdata:/var/lib/mysql
   api:
+    # image: benpeng/jungle:latest
     build:
       context: .
       dockerfile: Dockerfile
