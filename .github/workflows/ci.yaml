@@ -26,10 +26,9 @@ jobs:
           DB_SOURCE: ${{ secrets.ENV_DB_SOURCE }}
         run: |
           touch app.env
-          echo $PORT >> app.env
-          echo $DB_DRIVER >> app.env
-          echo $DB_SOURCE >> app.env
-          rm app.env
+          echo PORT=3000 >> app.env
+          echo DB_DRIVER=mysql >> app.env
+          echo DB_SOURCE=root:root456789@tcp(mysql8:3306)/jungle?multiStatements=true >> app.env
 
       - name: Build Docker image
         run: |
