@@ -43,7 +43,7 @@ func (server *Server) setupRouter() {
 }
 
 func (server *Server) Start(address string) error {
-	return server.router.Run(fmt.Sprintf(":%v", address)) // fmt.Sprintf(":%v", address)
+	return server.router.Run(":3000") // fmt.Sprintf(":%v", address)
 }
 
 func errorResponse(err error) gin.H {
