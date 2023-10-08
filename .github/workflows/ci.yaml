@@ -30,8 +30,9 @@ jobs:
           echo DB_DRIVER=mysql >> app.env
           echo $DB_SOURCE >> app.env
           ls -a
+          cat app.env
 
       - name: Build Docker image
         run: |
-          docker build -t benpeng/jungle --build-arg ENV_FILE=app.env .
+          docker build -t benpeng/jungle .
           docker push benpeng/jungle
