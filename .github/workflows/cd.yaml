@@ -17,8 +17,8 @@ jobs:
       - name: Delete old docker container
         run: docker rm -f myapp || true
 
-      - name: Run docker container
-        run: docker run -d --name myapp -p 3000:3000 benpeng/jungle:latest
+      # - name: Run docker container
+      #   run: docker run -d --name myapp -p 3000:3000 benpeng/jungle:latest
 
       - name: Check Docker Images and remove
         run: |
