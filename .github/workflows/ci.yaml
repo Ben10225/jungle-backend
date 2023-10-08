@@ -25,7 +25,7 @@ jobs:
           echo PORT=${{ secrets.ENV_PORT }} >> app.env
           echo DB_DRIVER=${{ secrets.ENV_DB_DRIVER }} >> app.env
           echo DB_SOURCE=${{ secrets.ENV_DB_SOURCE }} >> app.env
-          cat  app.env
+          cat app.env
 
       - name: Build Docker image
         run: |
