@@ -20,15 +20,11 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Write app.env
-        env: |
-          PORT=${{ secrets.ENV_PORT }}
-          DB_DRIVER=${{ secrets.ENV_DB_DRIVER }}
-          DB_SOURCE=${{ secrets.ENV_DB_SOURCE }}
         run: |
           touch app.env
-          echo "PORT=$PORT" >> app.env
-          echo "DB_DRIVER=$DB_DRIVER" >> app.env
-          echo "DB_SOURCE=$DB_SOURCE" >> app.env
+          echo PORT=${{ secrets.ENV_PORT }} >> app.env
+          echo DB_DRIVER=${{ secrets.ENV_DB_DRIVER }} >> app.env
+          echo DB_SOURCE=${{ secrets.ENV_DB_SOURCE }} >> app.env
           cat  app.env
 
       - name: Build Docker image
