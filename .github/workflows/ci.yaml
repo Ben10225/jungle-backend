@@ -26,8 +26,8 @@ jobs:
           DB_SOURCE: ${{ secrets.ENV_DB_SOURCE }}
         run: |
           touch app.env
-          echo PORT=$PORT >> app.env
-          echo $DB_DRIVER >> app.env
+          echo PORT=3000 >> app.env
+          echo DB_DRIVER=mysql >> app.env
           echo $DB_SOURCE >> app.env
           cat app.env
 
