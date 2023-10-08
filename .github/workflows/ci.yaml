@@ -29,9 +29,7 @@ jobs:
           echo $PORT >> app.env
           echo $DB_DRIVER >> app.env
           echo $DB_SOURCE >> app.env
-          echo ---
-          cat app.env
-          echo ---
+          rm app.env
 
       - name: Build Docker image
         run: |
