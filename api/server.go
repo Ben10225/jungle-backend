@@ -35,7 +35,6 @@ func (server *Server) setupRouter() {
 
 	router.POST("/login", server.loginUser)
 	router.POST("/user", server.signUp)
-	router.POST("/input", server.getInput)
 
 	router.NoRoute(EmbedReact)
 

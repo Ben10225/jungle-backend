@@ -24,9 +24,9 @@ func (s *Server) signUp(ctx *gin.Context) {
 			return
 		}
 	} else {
-		ctx.JSON(http.StatusOK, gin.H{
+		ctx.JSON(http.StatusBadRequest, gin.H{
 			"OK":      false,
-			"message": "email existed",
+			"message": "此信箱已被註冊",
 		})
 		return
 	}
@@ -74,19 +74,5 @@ func (s *Server) loginUser(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"user": &res,
-	})
-}
-
-func (s *Server) getInput(ctx *gin.Context) {
-	var user sqlc.User
-	if err := ctx.ShouldBindJSON(&user); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-
-	ctx.JSON(http.StatusOK, gin.H{
-		"name":     user.Name,
-		"email":    user.Email,
-		"password": "secret",
 	})
 }
