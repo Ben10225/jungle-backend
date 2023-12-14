@@ -36,6 +36,8 @@ func (server *Server) setupRouter() {
 	router.POST("/login", server.loginUser)
 	router.POST("/user", server.signUp)
 
+	router.POST("/available", server.GetGameResult)
+
 	router.NoRoute(EmbedReact)
 
 	server.router = router
