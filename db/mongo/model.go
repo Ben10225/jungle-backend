@@ -33,7 +33,7 @@ func GetDateData(c *gin.Context, thisMonth, nextMonth string) (structs.TimeTable
 
 	var result []structs.Available
 	var newReturnSlice []structs.Available
-	var boolSlice [][]bool
+	var intSlice [][]int
 
 	for cursor.Next(context.TODO()) {
 		err := cursor.Decode(&data)
@@ -43,12 +43,12 @@ func GetDateData(c *gin.Context, thisMonth, nextMonth string) (structs.TimeTable
 
 		result = append(result, data)
 
-		myslice := append([]bool{}, data.SureTimeArray...)
-		boolSlice = append(boolSlice, myslice)
+		myslice := append([]int{}, data.WorkTime...)
+		intSlice = append(intSlice, myslice)
 	}
 
 	for i := range result {
-		newReturnSlice = append(newReturnSlice, structs.Available{Date: result[i].Date, Yymm: result[i].Yymm, SureTimeArray: boolSlice[i]})
+		newReturnSlice = append(newReturnSlice, structs.Available{Date: result[i].Date, Yymm: result[i].Yymm, WorkTime: intSlice[i]})
 	}
 
 	var timeTable structs.TimeTable
