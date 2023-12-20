@@ -36,7 +36,11 @@ func (server *Server) setupRouter() {
 	router.POST("/login", server.loginUser)
 	router.POST("/user", server.signUp)
 
-	router.POST("/available", server.GetGameResult)
+	router.GET("/available", server.GetAvailableData)
+	router.POST("/available", server.PostAvailableData)
+
+	router.GET("createTest", server.CreateTestData)
+	router.DELETE("/availableAll", server.DeleteAvailable)
 
 	router.NoRoute(EmbedReact)
 

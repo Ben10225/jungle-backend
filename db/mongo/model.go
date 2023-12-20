@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"context"
+	"fmt"
 	"jungle-proj/db/configs"
 	"jungle-proj/structs"
 	"log"
@@ -13,17 +14,15 @@ import (
 
 var userCollection *mongo.Collection = configs.GetCollection(configs.DB, "available")
 
-func GetDateData(c *gin.Context, thisMonth, nextMonth string) (structs.TimeTable, error) {
-	// func GetDateData(c *gin.Context, yymm string) (structs.TimeTable, error) {
+func GetWorkData(c *gin.Context, thisMonth, nextMonth, theMonthAfterNext string) (structs.TimeTable, error) {
 	data := structs.Available{
 		Yymm: thisMonth,
 	}
 
 	query := bson.M{
-		"yymm": bson.M{"$in": []string{thisMonth, nextMonth}},
+		"yymm": bson.M{"$in": []string{thisMonth, nextMonth, theMonthAfterNext}},
 	}
 
-	// cursor, err := userCollection.Find(c, bson.M{"yymm": yymm})
 	cursor, err := userCollection.Find(c, query)
 	if err != nil {
 		log.Fatal(err)
@@ -56,20 +55,74 @@ func GetDateData(c *gin.Context, thisMonth, nextMonth string) (structs.TimeTable
 	for i, v := range newReturnSlice {
 		if v.Yymm == thisMonth {
 			timeTable.ThisMonth = append(timeTable.ThisMonth, newReturnSlice[i])
-		} else {
+		} else if v.Yymm == nextMonth {
 			timeTable.NextMonth = append(timeTable.NextMonth, newReturnSlice[i])
+		} else if v.Yymm == theMonthAfterNext {
+			timeTable.TheMonthAfterNext = append(timeTable.TheMonthAfterNext, newReturnSlice[i])
 		}
 	}
 	return timeTable, nil
 }
 
-// func GetDateData(c *gin.Context, yymm string) (*structs.Available, error) {
-// 	data := structs.Available{
-// 		Yymm: yymm,
-// 	}
-// 	err := userCollection.FindOne(c, bson.M{"yymm": yymm}).Decode(&data)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return &data, nil
-// }
+func PostWorkData(c *gin.Context, createData, updateData []structs.Available) error {
+	var er error
+
+	if len(createData) > 0 {
+		// newCreateDatas := []structs.Available{}
+		for _, v := range createData {
+			// newCreateDatas = append(newCreateDatas, v)
+			_, err := userCollection.InsertOne(c, structs.Available{
+				Yymm:     v.Yymm,
+				Date:     v.Date,
+				WorkTime: v.WorkTime,
+			})
+			if err != nil {
+				er = fmt.Errorf("err: %v", err)
+			}
+		}
+	}
+
+	if len(updateData) > 0 {
+		for _, v := range updateData {
+			filter := bson.D{{Key: "yymm", Value: v.Yymm}, {Key: "date", Value: v.Date}}
+			update := bson.D{{Key: "$set", Value: bson.D{{Key: "workTime", Value: v.WorkTime}}}}
+
+			_, err := userCollection.UpdateOne(context.TODO(), filter, update)
+			if err != nil {
+				er = fmt.Errorf("err: %v", err)
+			}
+		}
+	}
+	return er
+}
+
+func DeleteAllAvailableData(c *gin.Context) error {
+	filter := bson.D{}
+	_, err := userCollection.DeleteMany(context.TODO(), filter)
+
+	if err != nil {
+		return fmt.Errorf("err: %v", err)
+	}
+	return err
+}
+
+func CreateTestAvailableData(c *gin.Context) error {
+	var err error
+	createData := []structs.Available{
+		{Yymm: "2023-12", Date: "20", WorkTime: []int{-1, -1, -1, -1, -1, -1, -1, -1, -1, 1, 1, 1}},
+		{Yymm: "2023-12", Date: "31", WorkTime: []int{-1, 1, 1, -1, -1, -1, -1, -1, -1, 1, 1, 1}},
+		{Yymm: "2024-1", Date: "31", WorkTime: []int{-1, -1, -1, -1, -1, -1, 1, 1, 1, -1, -1, -1}},
+	}
+
+	for _, v := range createData {
+		_, err := userCollection.InsertOne(c, structs.Available{
+			Yymm:     v.Yymm,
+			Date:     v.Date,
+			WorkTime: v.WorkTime,
+		})
+		if err != nil {
+			return fmt.Errorf("err: %v", err)
+		}
+	}
+	return err
+}
