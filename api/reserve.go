@@ -6,9 +6,12 @@ import (
 	"jungle-proj/structs"
 	"log"
 	"net/http"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 )
+
+var wg sync.WaitGroup
 
 func (s *Server) GetAvailableData(c *gin.Context) {
 	// admin with cookie res three months data
@@ -87,5 +90,36 @@ func (s *Server) CreateTestData(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"ok": true,
+	})
+}
+
+func (s *Server) PostReserveData(c *gin.Context) {
+	var req struct {
+		ReviseAvailable structs.ReviseAvailable
+		AddReserve      structs.ReserveData
+	}
+
+	// need check time still have first
+
+	err := c.BindJSON(&req)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var errR, errA error
+
+	wg.Add(2)
+	go func() {
+		errR = mongo.UpdateAvailableData(c, &wg, req.ReviseAvailable)
+		errA = mongo.CreateReserveData(c, &wg, req.AddReserve)
+	}()
+
+	wg.Wait()
+	if errR != nil && errA != nil {
+		log.Fatal(errA, errR)
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"result": "ok",
 	})
 }

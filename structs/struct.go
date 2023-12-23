@@ -11,3 +11,18 @@ type TimeTable struct {
 	NextMonth         []Available
 	TheMonthAfterNext []Available
 }
+
+type ReviseAvailable struct {
+	Yymm      string
+	Date      string
+	HourIndex int
+	WholeHour int
+}
+
+type ReserveData struct {
+	Titles    []string
+	Time      string
+	Cost      string
+	HourIndex int
+	WholeHour int
+}

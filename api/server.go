@@ -39,6 +39,8 @@ func (server *Server) setupRouter() {
 	router.GET("/available", server.GetAvailableData)
 	router.POST("/available", server.PostAvailableData)
 
+	router.POST("/reserve", server.PostReserveData)
+
 	router.GET("createTest", server.CreateTestData)
 	router.DELETE("/availableAll", server.DeleteAvailable)
 

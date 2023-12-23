@@ -6,13 +6,15 @@ import (
 	"jungle-proj/db/configs"
 	"jungle-proj/structs"
 	"log"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-var userCollection *mongo.Collection = configs.GetCollection(configs.DB, "available")
+var availableCollection *mongo.Collection = configs.GetCollection(configs.DB, "available")
+var reserveCollection *mongo.Collection = configs.GetCollection(configs.DB, "reserve")
 
 func GetWorkData(c *gin.Context, thisMonth, nextMonth, theMonthAfterNext string) (structs.TimeTable, error) {
 	data := structs.Available{
@@ -23,7 +25,7 @@ func GetWorkData(c *gin.Context, thisMonth, nextMonth, theMonthAfterNext string)
 		"yymm": bson.M{"$in": []string{thisMonth, nextMonth, theMonthAfterNext}},
 	}
 
-	cursor, err := userCollection.Find(c, query)
+	cursor, err := availableCollection.Find(c, query)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -71,7 +73,7 @@ func PostWorkData(c *gin.Context, createData, updateData []structs.Available) er
 		// newCreateDatas := []structs.Available{}
 		for _, v := range createData {
 			// newCreateDatas = append(newCreateDatas, v)
-			_, err := userCollection.InsertOne(c, structs.Available{
+			_, err := availableCollection.InsertOne(c, structs.Available{
 				Yymm:     v.Yymm,
 				Date:     v.Date,
 				WorkTime: v.WorkTime,
@@ -87,7 +89,7 @@ func PostWorkData(c *gin.Context, createData, updateData []structs.Available) er
 			filter := bson.D{{Key: "yymm", Value: v.Yymm}, {Key: "date", Value: v.Date}}
 			update := bson.D{{Key: "$set", Value: bson.D{{Key: "workTime", Value: v.WorkTime}}}}
 
-			_, err := userCollection.UpdateOne(context.TODO(), filter, update)
+			_, err := availableCollection.UpdateOne(context.TODO(), filter, update)
 			if err != nil {
 				er = fmt.Errorf("err: %v", err)
 			}
@@ -98,7 +100,7 @@ func PostWorkData(c *gin.Context, createData, updateData []structs.Available) er
 
 func DeleteAllAvailableData(c *gin.Context) error {
 	filter := bson.D{}
-	_, err := userCollection.DeleteMany(context.TODO(), filter)
+	_, err := availableCollection.DeleteMany(context.TODO(), filter)
 
 	if err != nil {
 		return fmt.Errorf("err: %v", err)
@@ -115,7 +117,7 @@ func CreateTestAvailableData(c *gin.Context) error {
 	}
 
 	for _, v := range createData {
-		_, err := userCollection.InsertOne(c, structs.Available{
+		_, err := availableCollection.InsertOne(c, structs.Available{
 			Yymm:     v.Yymm,
 			Date:     v.Date,
 			WorkTime: v.WorkTime,
@@ -125,4 +127,58 @@ func CreateTestAvailableData(c *gin.Context) error {
 		}
 	}
 	return err
+}
+
+func UpdateAvailableData(c *gin.Context, wg *sync.WaitGroup, reviseData structs.ReviseAvailable) error {
+	defer wg.Done()
+	filter := bson.D{{Key: "yymm", Value: reviseData.Yymm}, {Key: "date", Value: reviseData.Date}}
+
+	var availeData structs.Available
+	err := availableCollection.FindOne(context.TODO(), filter).Decode(&availeData)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	gap := reviseData.WholeHour
+	if gap > 1 {
+		for i := range availeData.WorkTime {
+			if gap > 1 && i > reviseData.HourIndex {
+				availeData.WorkTime[i] = 0
+				gap--
+			}
+			if i == reviseData.HourIndex {
+				availeData.WorkTime[i] = 0
+			}
+		}
+	}
+
+	for i := range availeData.WorkTime {
+		if i == reviseData.HourIndex {
+			availeData.WorkTime[i] = 0
+		}
+	}
+
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "workTime", Value: availeData.WorkTime}}}}
+	_, err = availableCollection.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		return err
+	}
+
+	return err
+}
+
+func CreateReserveData(c *gin.Context, wg *sync.WaitGroup, addData structs.ReserveData) error {
+	defer wg.Done()
+	_, err := reserveCollection.InsertOne(c, structs.ReserveData{
+		Titles:    addData.Titles,
+		Time:      addData.Time,
+		Cost:      addData.Cost,
+		HourIndex: addData.HourIndex,
+		WholeHour: addData.WholeHour,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
