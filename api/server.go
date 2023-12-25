@@ -36,6 +36,7 @@ func (server *Server) setupRouter() {
 	router.POST("/login", server.loginUser)
 	router.POST("/user", server.signUp)
 
+	router.GET("/admin", server.GetAdminData)
 	router.GET("/available", server.GetAvailableData)
 	router.POST("/available", server.PostAvailableData)
 

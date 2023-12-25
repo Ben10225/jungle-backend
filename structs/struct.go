@@ -20,9 +20,17 @@ type ReviseAvailable struct {
 }
 
 type ReserveData struct {
-	Titles    []string
-	Time      string
-	Cost      string
-	HourIndex int
-	WholeHour int
+	Titles    []string `json:"titles,omitempty"`
+	Time      string   `json:"time,omitempty"`
+	Cost      string   `json:"cost,omitempty"`
+	HourIndex int      `json:"hourIndex,omitempty" bson:"hourIndex"`
+	WholeHour int      `json:"wholeHour,omitempty" bson:"wholeHour"`
+	Yymm      string   `json:"yymm,omitempty"`
+	Date      string   `json:"date,omitempty"`
+}
+
+type Booking struct {
+	ThisMonth         []ReserveData
+	NextMonth         []ReserveData
+	TheMonthAfterNext []ReserveData
 }

@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"jungle-proj/db/mongo"
 	"jungle-proj/structs"
 	"log"
@@ -11,30 +10,26 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var wg sync.WaitGroup
+var (
+	wg sync.WaitGroup
+	mu sync.Mutex
+)
 
 func (s *Server) GetAvailableData(c *gin.Context) {
-	// admin with cookie res three months data
-
 	thisMonth := c.Query("thisMonth")
 	nextMonth := c.Query("nextMonth")
-	theMonthAfterNext := c.Query("theMonthAfterNext")
-	r := c.Query("r")
 
-	result, err := mongo.GetWorkData(c, thisMonth, nextMonth, theMonthAfterNext)
+	var result structs.TimeTable
+	var err error
+
+	wg.Add(1)
+	go func() {
+		result, err = mongo.GetWorkData(c, &wg, thisMonth, nextMonth, "")
+	}()
+	wg.Wait()
+
 	if err != nil {
-		fmt.Println(err)
-	}
-
-	if r == "admin" {
-		c.JSON(http.StatusOK, gin.H{
-			"result": gin.H{
-				"thisMonth":         result.ThisMonth,
-				"nextMonth":         result.NextMonth,
-				"theMonthAfterNext": result.TheMonthAfterNext,
-			},
-		})
-		return
+		log.Fatal(err)
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -43,7 +38,6 @@ func (s *Server) GetAvailableData(c *gin.Context) {
 			"nextMonth": result.NextMonth,
 		},
 	})
-
 }
 
 func (s *Server) PostAvailableData(c *gin.Context) {
@@ -99,18 +93,28 @@ func (s *Server) PostReserveData(c *gin.Context) {
 		AddReserve      structs.ReserveData
 	}
 
-	// need check time still have first
-
 	err := c.BindJSON(&req)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	var errR, errA error
+	// lock
+	mu.Lock()
+	defer mu.Unlock()
 
+	canReserve, originTime := mongo.ReadAvailableData(c, req.ReviseAvailable)
+
+	if !canReserve {
+		c.JSON(http.StatusOK, gin.H{
+			"result": "time repeat",
+		})
+		return
+	}
+
+	var errR, errA error
 	wg.Add(2)
 	go func() {
-		errR = mongo.UpdateAvailableData(c, &wg, req.ReviseAvailable)
+		errR = mongo.UpdateAvailableData(c, &wg, req.ReviseAvailable, originTime)
 		errA = mongo.CreateReserveData(c, &wg, req.AddReserve)
 	}()
 

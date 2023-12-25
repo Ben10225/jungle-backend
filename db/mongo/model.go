@@ -14,15 +14,21 @@ import (
 )
 
 var availableCollection *mongo.Collection = configs.GetCollection(configs.DB, "available")
-var reserveCollection *mongo.Collection = configs.GetCollection(configs.DB, "reserve")
 
-func GetWorkData(c *gin.Context, thisMonth, nextMonth, theMonthAfterNext string) (structs.TimeTable, error) {
+func GetWorkData(c *gin.Context, wg *sync.WaitGroup, thisMonth, nextMonth, theMonthAfterNext string) (structs.TimeTable, error) {
+	defer wg.Done()
+
 	data := structs.Available{
 		Yymm: thisMonth,
 	}
 
 	query := bson.M{
 		"yymm": bson.M{"$in": []string{thisMonth, nextMonth, theMonthAfterNext}},
+	}
+	if theMonthAfterNext == "" {
+		query = bson.M{
+			"yymm": bson.M{"$in": []string{thisMonth, nextMonth}},
+		}
 	}
 
 	cursor, err := availableCollection.Find(c, query)
@@ -70,9 +76,7 @@ func PostWorkData(c *gin.Context, createData, updateData []structs.Available) er
 	var er error
 
 	if len(createData) > 0 {
-		// newCreateDatas := []structs.Available{}
 		for _, v := range createData {
-			// newCreateDatas = append(newCreateDatas, v)
 			_, err := availableCollection.InsertOne(c, structs.Available{
 				Yymm:     v.Yymm,
 				Date:     v.Date,
@@ -129,56 +133,68 @@ func CreateTestAvailableData(c *gin.Context) error {
 	return err
 }
 
-func UpdateAvailableData(c *gin.Context, wg *sync.WaitGroup, reviseData structs.ReviseAvailable) error {
-	defer wg.Done()
+func ReadAvailableData(c *gin.Context, reviseData structs.ReviseAvailable) (bool, []int) {
+	var result structs.Available
 	filter := bson.D{{Key: "yymm", Value: reviseData.Yymm}, {Key: "date", Value: reviseData.Date}}
-
-	var availeData structs.Available
-	err := availableCollection.FindOne(context.TODO(), filter).Decode(&availeData)
+	err := availableCollection.FindOne(context.TODO(), filter).Decode(&result)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	gap := reviseData.WholeHour
-	if gap > 1 {
-		for i := range availeData.WorkTime {
-			if gap > 1 && i > reviseData.HourIndex {
-				availeData.WorkTime[i] = 0
+	originArr := result.WorkTime
+	if reviseData.WholeHour > 1 {
+		gap := reviseData.WholeHour
+		for i, v := range originArr {
+			if i > reviseData.HourIndex && gap > 0 {
+				if v != 1 {
+					return false, originArr
+				}
 				gap--
 			}
 			if i == reviseData.HourIndex {
-				availeData.WorkTime[i] = 0
+				if v != 1 {
+					return false, originArr
+				}
+				gap--
 			}
 		}
 	}
 
-	for i := range availeData.WorkTime {
-		if i == reviseData.HourIndex {
-			availeData.WorkTime[i] = 0
+	if originArr[reviseData.HourIndex] != 1 {
+		return false, originArr
+	}
+
+	return true, originArr
+}
+
+func UpdateAvailableData(c *gin.Context, wg *sync.WaitGroup, reviseData structs.ReviseAvailable, originArr []int) error {
+	defer wg.Done()
+	filter := bson.D{{Key: "yymm", Value: reviseData.Yymm}, {Key: "date", Value: reviseData.Date}}
+
+	gap := reviseData.WholeHour
+	if gap > 1 {
+		for i := range originArr {
+			if gap > 1 && i > reviseData.HourIndex {
+				originArr[i] = 0
+				gap--
+			}
+			if i == reviseData.HourIndex {
+				originArr[i] = 0
+			}
 		}
 	}
 
-	update := bson.D{{Key: "$set", Value: bson.D{{Key: "workTime", Value: availeData.WorkTime}}}}
-	_, err = availableCollection.UpdateOne(context.TODO(), filter, update)
+	for i := range originArr {
+		if i == reviseData.HourIndex {
+			originArr[i] = 0
+		}
+	}
+
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "workTime", Value: originArr}}}}
+	_, err := availableCollection.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
 		return err
 	}
 
 	return err
-}
-
-func CreateReserveData(c *gin.Context, wg *sync.WaitGroup, addData structs.ReserveData) error {
-	defer wg.Done()
-	_, err := reserveCollection.InsertOne(c, structs.ReserveData{
-		Titles:    addData.Titles,
-		Time:      addData.Time,
-		Cost:      addData.Cost,
-		HourIndex: addData.HourIndex,
-		WholeHour: addData.WholeHour,
-	})
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
