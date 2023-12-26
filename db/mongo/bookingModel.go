@@ -17,13 +17,12 @@ var reserveCollection *mongo.Collection = configs.GetCollection(configs.DB, "res
 func CreateReserveData(c *gin.Context, wg *sync.WaitGroup, addData structs.ReserveData) error {
 	defer wg.Done()
 	_, err := reserveCollection.InsertOne(c, structs.ReserveData{
-		Titles:    addData.Titles,
-		Time:      addData.Time,
-		Cost:      addData.Cost,
-		HourIndex: addData.HourIndex,
-		WholeHour: addData.WholeHour,
-		Yymm:      addData.Yymm,
-		Date:      addData.Date,
+		Titles: addData.Titles,
+		Detail: addData.Detail,
+		Hour:   addData.Hour,
+		Yymm:   addData.Yymm,
+		Date:   addData.Date,
+		User:   addData.User,
 	})
 	if err != nil {
 		return err
@@ -66,7 +65,7 @@ func RealAllBooking(c *gin.Context, wg *sync.WaitGroup, thisMonth, nextMonth, th
 	}
 
 	for i := range result {
-		newReturnSlice = append(newReturnSlice, structs.ReserveData{Date: result[i].Date, Yymm: result[i].Yymm, Titles: titleSlice[i], Cost: result[i].Cost, Time: result[i].Time, HourIndex: result[i].HourIndex, WholeHour: result[i].WholeHour})
+		newReturnSlice = append(newReturnSlice, structs.ReserveData{Date: result[i].Date, Yymm: result[i].Yymm, Titles: titleSlice[i], Detail: result[i].Detail, Hour: result[i].Hour, User: result[i].User})
 	}
 
 	var booking structs.Booking
@@ -82,4 +81,16 @@ func RealAllBooking(c *gin.Context, wg *sync.WaitGroup, thisMonth, nextMonth, th
 	}
 
 	return booking, nil
+}
+
+func UpdateBookingStateData(c *gin.Context, yymm, date string, hourIndex, newValue int) error {
+	filter := bson.D{{Key: "yymm", Value: yymm}, {Key: "date", Value: date}, {Key: "hour.index", Value: hourIndex}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "detail.state", Value: newValue}}}}
+
+	_, err := reserveCollection.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return err
 }

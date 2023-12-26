@@ -41,6 +41,7 @@ func (server *Server) setupRouter() {
 	router.POST("/available", server.PostAvailableData)
 
 	router.POST("/reserve", server.PostReserveData)
+	router.PATCH("/bookingState", server.UpdateBookingState)
 
 	router.GET("createTest", server.CreateTestData)
 	router.DELETE("/availableAll", server.DeleteAvailable)

@@ -46,3 +46,26 @@ func (s *Server) GetAdminData(c *gin.Context) {
 		},
 	})
 }
+
+func (s *Server) UpdateBookingState(c *gin.Context) {
+	var req struct {
+		Yymm      string
+		Date      string
+		HourIndex int
+		NewState  int
+	}
+
+	err := c.BindJSON(&req)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = mongo.UpdateBookingStateData(c, req.Yymm, req.Date, req.HourIndex, req.NewState)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"result": "ok",
+	})
+}
