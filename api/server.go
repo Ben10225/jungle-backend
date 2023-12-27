@@ -46,6 +46,9 @@ func (server *Server) setupRouter() {
 	router.GET("createTest", server.CreateTestData)
 	router.DELETE("/availableAll", server.DeleteAvailable)
 
+	router.GET("createReserveTest", server.CreateReserveTestData)
+	router.DELETE("/reserveAll", server.DeleteReserve)
+
 	router.NoRoute(EmbedReact)
 
 	server.router = router

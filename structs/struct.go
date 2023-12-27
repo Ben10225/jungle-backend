@@ -20,23 +20,28 @@ type ReviseAvailable struct {
 }
 
 type ReserveData struct {
-	Titles []string `json:"titles"`
-	Detail struct {
-		Time  string `json:"time"`
-		Cost  string `json:"cost"`
-		State int    `json:"state"`
-	} `json:"detail"`
-	Hour struct {
-		Index int `json:"index"`
-		Whole int `json:"whole"`
-	} `json:"hour"`
+	Titles []string       `json:"titles"`
+	Detail BookingDetails `json:"detail"`
+	Hour   BookingHour    `json:"hour"`
+	Yymm   string         `json:"yymm"`
+	Date   string         `json:"date"`
+	User   BookingUser    `json:"user"`
+}
 
-	Yymm string `json:"yymm"`
-	Date string `json:"date"`
-	User struct {
-		Name  string `json:"name"`
-		Phone string `json:"phone"`
-	} `json:"user"`
+type BookingUser struct {
+	Name  string `json:"name"`
+	Phone string `json:"phone"`
+}
+
+type BookingHour struct {
+	Index int `json:"index"`
+	Whole int `json:"whole"`
+}
+
+type BookingDetails struct {
+	Time  string `json:"time"`
+	Cost  string `json:"cost"`
+	State int    `json:"state"`
 }
 
 type Booking struct {

@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"context"
+	"fmt"
 	"jungle-proj/db/configs"
 	"jungle-proj/structs"
 	"log"
@@ -92,5 +93,40 @@ func UpdateBookingStateData(c *gin.Context, yymm, date string, hourIndex, newVal
 		log.Fatal(err)
 	}
 
+	return err
+}
+
+func DeleteAllReserveData(c *gin.Context) error {
+	filter := bson.D{}
+	_, err := reserveCollection.DeleteMany(context.TODO(), filter)
+
+	if err != nil {
+		return fmt.Errorf("err: %v", err)
+	}
+	return err
+}
+
+func CreateTestReserveData(c *gin.Context) error {
+	var err error
+	createData := []structs.ReserveData{
+		{Yymm: "2023-12", Date: "14", Titles: []string{"修眉毛", "修鬍子", "修手毛", "修腳毛", "修私密處"}, User: structs.BookingUser{Name: "彭彭", Phone: "0912345678"}, Hour: structs.BookingHour{Index: 4, Whole: 3}, Detail: structs.BookingDetails{Time: "2 小時 30 分鐘", Cost: "7500", State: 0}},
+		{Yymm: "2023-12", Date: "14", Titles: []string{"修眉毛"}, User: structs.BookingUser{Name: "彭彭", Phone: "0912345678"}, Hour: structs.BookingHour{Index: 10, Whole: 1}, Detail: structs.BookingDetails{Time: "20 分鐘", Cost: "1000", State: 0}},
+		{Yymm: "2023-12", Date: "14", Titles: []string{"修手毛", "修私密處"}, User: structs.BookingUser{Name: "彭彭", Phone: "0912345678"}, Hour: structs.BookingHour{Index: 8, Whole: 2}, Detail: structs.BookingDetails{Time: "1 小時 30 分鐘", Cost: "4500", State: 0}},
+		{Yymm: "2023-12", Date: "14", Titles: []string{"修眉毛"}, User: structs.BookingUser{Name: "彭彭", Phone: "0912345678"}, Hour: structs.BookingHour{Index: 0, Whole: 1}, Detail: structs.BookingDetails{Time: "20 分鐘", Cost: "1000", State: 0}},
+	}
+
+	for _, v := range createData {
+		_, err := reserveCollection.InsertOne(c, structs.ReserveData{
+			Yymm:   v.Yymm,
+			Date:   v.Date,
+			Titles: v.Titles,
+			Detail: v.Detail,
+			Hour:   v.Hour,
+			User:   v.User,
+		})
+		if err != nil {
+			return fmt.Errorf("err: %v", err)
+		}
+	}
 	return err
 }

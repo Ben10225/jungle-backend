@@ -69,3 +69,25 @@ func (s *Server) UpdateBookingState(c *gin.Context) {
 		"result": "ok",
 	})
 }
+
+func (s *Server) DeleteReserve(c *gin.Context) {
+	err := mongo.DeleteAllReserveData(c)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"ok": true,
+	})
+}
+
+func (s *Server) CreateReserveTestData(c *gin.Context) {
+	err := mongo.CreateTestReserveData(c)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"ok": true,
+	})
+}
