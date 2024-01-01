@@ -24,6 +24,9 @@ func main() {
 
 	store := sqlc.NewStore(conn)
 
+	// ctx, cancle := signal.NotifyContext(context.Background(), os.Interrupt)
+	// defer cancle()
+
 	server, err := api.NewServer(store)
 	if err != nil {
 		log.Fatal("connot create server", err)

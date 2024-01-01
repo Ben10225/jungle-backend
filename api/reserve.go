@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"jungle-proj/db/mongo"
 	"jungle-proj/structs"
 	"log"
@@ -31,6 +32,14 @@ func (s *Server) GetAvailableData(c *gin.Context) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	fmt.Println("here")
+	data, err := s.Repo.FindByID(c, 11)
+	if err != nil {
+		fmt.Println("failed to find:", err)
+		return
+	}
+	fmt.Println(data)
 
 	c.JSON(http.StatusOK, gin.H{
 		"result": gin.H{
@@ -96,6 +105,12 @@ func (s *Server) PostReserveData(c *gin.Context) {
 	err := c.BindJSON(&req)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	err = s.Repo.Insert(c, req.AddReserve)
+	if err != nil {
+		fmt.Println("failed to insert:", err)
+		return
 	}
 
 	// lock

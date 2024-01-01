@@ -7,8 +7,10 @@ import (
 	"strings"
 
 	sqlc "jungle-proj/db/sqlc"
+	"jungle-proj/repository/order"
 
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 )
 
 //go:embed web/dist
@@ -17,12 +19,24 @@ var staticFS embed.FS
 type Server struct {
 	store  *sqlc.Store
 	router *gin.Engine
+	rdb    *redis.Client
+	Repo   *order.RedisRepo
 }
 
 func NewServer(store *sqlc.Store) (*Server, error) {
 	server := &Server{
 		store: store,
+		rdb:   redis.NewClient(&redis.Options{}),
+		Repo: &order.RedisRepo{
+			Client: redis.NewClient(&redis.Options{}),
+		},
 	}
+
+	err := server.rdb.Ping(&gin.Context{}).Err()
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println("Connect Redis")
 
 	server.setupRouter()
 	return server, nil
